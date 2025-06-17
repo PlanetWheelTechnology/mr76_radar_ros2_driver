@@ -103,7 +103,7 @@ private:
 
   void CommReadCallback(const char *byte, size_t len);
 
-  void SetCanMessageData(serial2can_msg::CanMessageData &can_msg);
+  void SetCanMessageData(const serial2can_msg::CanMessageData &can_msg);
 
   bool AnalysisOne(uint8_t byte);
 };

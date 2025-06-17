@@ -17,6 +17,10 @@
 
 #include "serial2can_interface.h"
 
+#ifdef USE_ROS2LOGGER
+#include <rclcpp/rclcpp.hpp>
+#endif
+
 #include <cstring>
 
 using namespace serial2can_msg;
@@ -38,11 +42,15 @@ bool Serial2CanInterface::Open(std::string &port_name, uint32_t com_baudrate) {
   serial_interface_->SetReadCallback(std::bind(&Serial2CanInterface::CommReadCallback, 
     this, std::placeholders::_1, std::placeholders::_2));
   if (!serial_interface_->Open(port_name, com_baudrate)) {
-    LOG_ERROR("Serial2CanInterface::Open() failed.","");
+#ifdef USE_ROS2LOGGER
+    RCLCPP_ERROR(rclcpp::get_logger("serial2can"), "Serial2CanInterface::Open() failed.");
+#else
+    LOG_ERROR("Serial2CanInterface::Open() failed.", "");
+#endif
     return false;
-  } else {
-    return true;
-  }
+  } 
+    
+  return true;
 }
 
 bool Serial2CanInterface::Close() {
@@ -58,9 +66,9 @@ bool Serial2CanInterface::ReadFromBus(CanMessageData &can_msg) {
       can_message_list_.pop_front();  // 删除队列头数据
       return true;
     }
-  } else {
-    return false;
-  }
+  } 
+  
+  return false;
 }
 
 bool Serial2CanInterface::WriteToBus(const CanMessageData &can_msg) {
@@ -86,11 +94,15 @@ bool Serial2CanInterface::WriteToBus(const CanMessageData &can_msg) {
 
   uint32_t tx_len = 0;
   if (!serial_interface_->WriteToIo((uint8_t *)&pack, sizeof(uart2can_pack_t), &tx_len)) {
-    LOG_ERROR("Serial2CanInterface::WriteToBus: WriteToIo failed.","");
+#ifdef USE_ROS2LOGGER
+    RCLCPP_ERROR(rclcpp::get_logger("serial2can"), "Serial2CanInterface::WriteToBus: WriteToIo failed.");
+#else
+    LOG_ERROR("Serial2CanInterface::WriteToBus: WriteToIo failed.", "");
+#endif
     return false;
-  } else {
-    return true;
-  }
+  } 
+
+  return true;
 }
 
 static uint32_t Big2LittleEndian(uint8_t *byte4) {
@@ -106,7 +118,11 @@ void Serial2CanInterface::CommReadCallback(const char *byte, size_t len) {
       std::memset(&can_msg, 0, sizeof(CanMessageData));
       can_msg.frame_dlc_ = uart2can_msg_.frame_dlc;
       if (uart2can_msg_.frame_dlc > 8) {
+#ifdef USE_ROS2LOGGER
+        RCLCPP_ERROR(rclcpp::get_logger("serial2can"), "Serial2CanInterface::CommReadCallback: frame_dlc > 8.");
+#else
         LOG_ERROR("Serial2CanInterface::CommReadCallback: frame_dlc > 8.","");
+#endif
         return;
       }
       can_msg.frame_id_ = Big2LittleEndian(uart2can_msg_.frame_id);
@@ -119,7 +135,7 @@ void Serial2CanInterface::CommReadCallback(const char *byte, size_t len) {
   }
 }
 
-void Serial2CanInterface::SetCanMessageData(CanMessageData &can_msg) {
+void Serial2CanInterface::SetCanMessageData(const CanMessageData &can_msg) {
   std::lock_guard<std::mutex> lg(can_message_list_mutex_);
   can_message_list_.push_back(can_msg);
   is_get_can_message_flag_ = true;
