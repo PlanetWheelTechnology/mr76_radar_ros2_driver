@@ -18,7 +18,7 @@
 #ifndef __MR76_NODE_H__
 #define __MR76_NODE_H__
 
-
+#include "mr76.h"
 
 
 #endif //__MR76_NODE_H__

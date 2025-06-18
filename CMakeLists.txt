@@ -41,9 +41,9 @@ set(SERIAL2CAN_SOURCE
   ${CMAKE_CURRENT_SOURCE_DIR}/serial2can/serial2can_interface.cpp
 )
 
-# set(MR76_RADAR_SOURCE
-#   ${CMAKE_CURRENT_SOURCE_DIR}/mr76_radar/xxx.cpp
-# )
+set(MR76_RADAR_SOURCE
+  ${CMAKE_CURRENT_SOURCE_DIR}/mr76_radar/mr76.cpp
+)
 
 # file(GLOB  SRC_C ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c)
 # file(GLOB  SRC_CPP ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
@@ -57,7 +57,7 @@ target_link_libraries(serial2can_node pthread)
 
 add_executable(${PROJECT_NAME}_node 
   ${CMAKE_CURRENT_SOURCE_DIR}/src/mr76_node.cpp
-  # ${MR76_RADAR_SOURCE}
+  ${MR76_RADAR_SOURCE}
 )
 ament_target_dependencies(${PROJECT_NAME}_node rclcpp can_msgs radar_msgs)
 

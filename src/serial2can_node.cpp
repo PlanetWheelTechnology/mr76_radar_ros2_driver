@@ -52,9 +52,9 @@ class Serial2CanNode: public rclcpp::Node {
       RCLCPP_ERROR(this->get_logger(), "open %s error.", port_name_.c_str());
       RCLCPP_INFO(this->get_logger(), "Node:%s start fail.", this->get_name());
     } else {
-      can_frame_publisher_ = this->create_publisher<can_msgs::msg::Frame>("can_frame_messages", 10);
+      can_frame_publisher_ = this->create_publisher<can_msgs::msg::Frame>("can_frame_messages", 300);
 
-      topic_message_pub_timer_ = this->create_wall_timer(10ms, std::bind(&Serial2CanNode::topic_message_pub_timer_callback, this));
+      topic_message_pub_timer_ = this->create_wall_timer(5ms, std::bind(&Serial2CanNode::topic_message_pub_timer_callback, this));
 
       RCLCPP_INFO(this->get_logger(), "Node:%s start success.", this->get_name());
     }
@@ -73,7 +73,6 @@ class Serial2CanNode: public rclcpp::Node {
       can_frame_msg.is_error = false;  // 假设没有错误帧
       can_frame_msg.dlc = can_msg_rx.frame_dlc_;
       std::copy(std::begin(can_msg_rx.frame_data_buff_), std::end(can_msg_rx.frame_data_buff_), can_frame_msg.data.begin());
-
       can_frame_publisher_->publish(can_frame_msg);
     }
   }
